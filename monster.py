@@ -5,6 +5,7 @@ BUTTON_WIDTH = 400
 BUTTON_HEIGHT = 50
 X_SPACING = BUTTON_WIDTH + 100
 Y_SPACING = 30
+STAMINA_PER_ATTACK = 30
 
 class Button:
     def __init__(self, size, text, pos, bgColor=(0, 255, 0), textColor=(0, 0, 0)):
@@ -29,21 +30,32 @@ class Button:
         return False
 
 class Monster:
-    def __init__(self, name, health, might, y_offset):
+    def __init__(self, name, strength, life, speed, stamina, y_offset):
         self.name = name
-        self.health = health
-        self.might = might
+        self.strength = strength
+        self.life = life
+        self.speed = speed
+        self.stamina = stamina
+        self.max_stamina = stamina
         self.y_offset = y_offset
 
     def render(self, screen):
         font = pygame.font.Font(pygame.font.get_default_font(), 30)
-        health_surface = font.render(f"{self.name} - Health: {self.health} Might: {self.might}", False, (0, 0, 0))
+        health_surface = font.render(f"{self.name} - Strength: {self.strength} Life: {self.life} Speed: {self.speed} Stamina: {self.stamina}", False, (0, 0, 0))
         screen.blit(health_surface, (0,self.y_offset))
 
-    def calculate_attack_damage(self):
-        return self.might #TODO this will depend on move selected etc
-    def sustain_attack_damage(self, damage):
-        self.health -= damage
+    def do_attack(self):
+        if(self.stamina > STAMINA_PER_ATTACK):
+            self.stamina -= STAMINA_PER_ATTACK
+            return self.strength #TODO this will depend on move selected etc
+        return 0
+
+    def receive_attack(self, damage):
+        self.life -= damage
+
+    def recharge(self):
+        self.stamina = min(self.max_stamina, self.stamina+self.max_stamina/2) 
+
 
 # pygame setup
 pygame.init()
@@ -53,9 +65,9 @@ running = True
 
 x_offset = 0
 y_offset = 0
-attacking_monster = Monster("attack", 1000, 30, y_offset)
+attacking_monster = Monster(name="Sensei Pandaken", strength=18800, life=246282, speed=10944, stamina=280, y_offset=y_offset)
 y_offset += Y_SPACING
-defending_monster = Monster("defend", 1000, 30, y_offset)
+defending_monster = Monster(name="Rageaster", strength=42042, life=1157065, speed=24136, stamina=240, y_offset=y_offset)
 y_offset += Y_SPACING
 move_buttons = []
 move_buttons.append(Button([BUTTON_WIDTH, BUTTON_HEIGHT], "Do Epic Move", [x_offset, y_offset]))
@@ -82,8 +94,8 @@ while running:
         move_button.render(screen)
         if move_button.clicked(events):
             print(f"Doing {move_button.text}...")
-            damage = attacking_monster.calculate_attack_damage()
-            defending_monster.sustain_attack_damage(damage)
+            damage = attacking_monster.do_attack()
+            defending_monster.receive_attack(damage)
 
     attacking_monster.render(screen)
     defending_monster.render(screen)
