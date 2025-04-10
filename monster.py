@@ -31,20 +31,20 @@ class Button:
 
 class Monster:
     def __init__(self, name, strength, life, speed, stamina, y_offset):
-        self.name = name
-        self.strength = strength
-        self.life = life
-        self.speed = speed
-        self.stamina = stamina
-        self.max_stamina = stamina
-        self.y_offset = y_offset
+        self.name : str = name
+        self.strength : int = strength
+        self.life : int = life
+        self.speed : int = speed
+        self.stamina : int = stamina
+        self.max_stamina : int = stamina
+        self.y_offset : int = y_offset
 
     def render(self, screen):
         font = pygame.font.Font(pygame.font.get_default_font(), 30)
         health_surface = font.render(f"{self.name} - Strength: {self.strength} Life: {self.life} Speed: {self.speed} Stamina: {self.stamina}", False, (0, 0, 0))
         screen.blit(health_surface, (0,self.y_offset))
 
-    def do_attack(self):
+    def do_attack(self) -> int:
         if(self.stamina > STAMINA_PER_ATTACK):
             self.stamina -= STAMINA_PER_ATTACK
             return self.strength #TODO this will depend on move selected etc
@@ -54,7 +54,7 @@ class Monster:
         self.life -= damage
 
     def recharge(self):
-        self.stamina = min(self.max_stamina, self.stamina+self.max_stamina/2) 
+        self.stamina = int(min(self.max_stamina, self.stamina+self.max_stamina/2))
 
 
 # pygame setup
@@ -63,6 +63,7 @@ screen = pygame.display.set_mode((1280, 720))
 clock = pygame.time.Clock()
 running = True
 
+# setup attack buttons and monster stats
 x_offset = 0
 y_offset = 0
 attacking_monster = Monster(name="Sensei Pandaken", strength=18800, life=246282, speed=10944, stamina=280, y_offset=y_offset)
@@ -78,6 +79,9 @@ y_offset += Y_SPACING + BUTTON_HEIGHT
 move_buttons.append(Button([BUTTON_WIDTH, BUTTON_HEIGHT], "Do Ultimate Move", [x_offset, y_offset]))
 x_offset += X_SPACING
 move_buttons.append(Button([BUTTON_WIDTH, BUTTON_HEIGHT], "Do Smash Bros Move", [x_offset, y_offset]))
+x_offset = X_SPACING/2
+y_offset += Y_SPACING + BUTTON_HEIGHT
+move_buttons.append(Button([BUTTON_WIDTH, BUTTON_HEIGHT], "Recharge", [x_offset, y_offset]))
 
 while running:
     # poll for events
@@ -94,8 +98,11 @@ while running:
         move_button.render(screen)
         if move_button.clicked(events):
             print(f"Doing {move_button.text}...")
-            damage = attacking_monster.do_attack()
-            defending_monster.receive_attack(damage)
+            if(move_button.text == "Recharge"): # urggggghhhh
+                attacking_monster.recharge()
+            else:
+                damage = attacking_monster.do_attack()
+                defending_monster.receive_attack(damage)
 
     attacking_monster.render(screen)
     defending_monster.render(screen)
