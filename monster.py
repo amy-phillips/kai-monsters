@@ -1,6 +1,11 @@
 # Example file showing a basic pygame "game loop"
 import pygame
 
+BUTTON_WIDTH = 400
+BUTTON_HEIGHT = 50
+X_SPACING = BUTTON_WIDTH + 100
+Y_SPACING = 30
+
 class Button:
     def __init__(self, size, text, pos, bgColor=(0, 255, 0), textColor=(0, 0, 0)):
         self.pos  = pos
@@ -46,9 +51,21 @@ screen = pygame.display.set_mode((1280, 720))
 clock = pygame.time.Clock()
 running = True
 
-move_button = Button([350, 50], "Do Epic Move", [50, 50])
-attacking_monster = Monster("attack", 1000, 30, 0)
-defending_monster = Monster("defend", 1000, 30, 30)
+x_offset = 0
+y_offset = 0
+attacking_monster = Monster("attack", 1000, 30, y_offset)
+y_offset += Y_SPACING
+defending_monster = Monster("defend", 1000, 30, y_offset)
+y_offset += Y_SPACING
+move_buttons = []
+move_buttons.append(Button([BUTTON_WIDTH, BUTTON_HEIGHT], "Do Epic Move", [x_offset, y_offset]))
+x_offset += X_SPACING
+move_buttons.append(Button([BUTTON_WIDTH, BUTTON_HEIGHT], "Do Moar Epic Move", [x_offset, y_offset]))
+x_offset = 0
+y_offset += Y_SPACING + BUTTON_HEIGHT
+move_buttons.append(Button([BUTTON_WIDTH, BUTTON_HEIGHT], "Do Ultimate Move", [x_offset, y_offset]))
+x_offset += X_SPACING
+move_buttons.append(Button([BUTTON_WIDTH, BUTTON_HEIGHT], "Do Smash Bros Move", [x_offset, y_offset]))
 
 while running:
     # poll for events
@@ -61,12 +78,12 @@ while running:
     # fill the screen with a color to wipe away anything from last frame
     screen.fill("purple")
 
-    # RENDER YOUR GAME HERE
-    move_button.render(screen)
-    if move_button.clicked(events):
-        print("Doing epic move...")
-        damage = attacking_monster.calculate_attack_damage()
-        defending_monster.sustain_attack_damage(damage)
+    for move_button in move_buttons:
+        move_button.render(screen)
+        if move_button.clicked(events):
+            print(f"Doing {move_button.text}...")
+            damage = attacking_monster.calculate_attack_damage()
+            defending_monster.sustain_attack_damage(damage)
 
     attacking_monster.render(screen)
     defending_monster.render(screen)
